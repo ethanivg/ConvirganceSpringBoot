@@ -1,0 +1,26 @@
+[
+  {
+    "WAREHOUSE_ID": 1,
+    "PRODUCT_ID": 101,
+    "MANUFACTURER": "ABC Corp",
+    "PRODUCT": "Widget A",
+    "BIN_DATE": "2025-02-06T10:00:00",
+    "QUANTITY": 100
+  },
+  {
+    "WAREHOUSE_ID": 2,
+    "PRODUCT_ID": 102,
+    "MANUFACTURER": "XYZ Inc",
+    "PRODUCT": "Gadget B",
+    "BIN_DATE": "2025-02-06T12:30:00",
+    "QUANTITY": 250
+  },
+  {
+    "WAREHOUSE_ID": 3,
+    "PRODUCT_ID": 103,
+    "MANUFACTURER": "Tech Solutions",
+    "PRODUCT": "Device C",
+    "BIN_DATE": "2025-02-06T14:00:00",
+    "QUANTITY": 75
+  }
+]
