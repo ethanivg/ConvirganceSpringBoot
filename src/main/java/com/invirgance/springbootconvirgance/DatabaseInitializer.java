@@ -29,7 +29,7 @@ public class DatabaseInitializer
         try
         {
             DBMS dbms = new DBMS(dataSource);
-            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :QUANTITY)";
+            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :BIN_DATE, :QUANTITY)";
             Query insert = new Query(sql);
             Iterable<JSONObject> stream = new JSONInput().read(new FileSource("src/test/resources/inventory_seed.json"));
 
@@ -39,6 +39,7 @@ public class DatabaseInitializer
                     + "PRODUCT_ID INTEGER,\n"
                     + "MANUFACTURER VARCHAR(255),\n"
                     + "PRODUCT VARCHAR(255),\n"                    
+                    + "BIN_DATE VARCHAR(255),\n"                    
                     + "QUANTITY INTEGER\n"
                     + ")")));
 

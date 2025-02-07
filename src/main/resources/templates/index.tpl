@@ -28,7 +28,8 @@ html(lang:'en') {
 										th('Warehouse ID')
 										th('Product ID')
 										th('Manufacturer')
-										th('Product')									
+										th('Product')
+										th('Bin Date')
 										th('Quantity')
 									}
 								}
@@ -38,7 +39,8 @@ html(lang:'en') {
 											td(item.warehouse_id)
 											td(item.product_id)
 											td(item.manufacturer)
-											td(item.product)									
+											td(item.product)
+											td(item.bin_date)
 											td(item.quantity)
 										}
 									}
@@ -78,14 +80,14 @@ html(lang:'en') {
 					div(class: 'card-body') {
 						h5(class: 'card-title', 'Bulk Upload Inventory')
 						div(class: 'alert alert-info') {
-							p('Supported formats: CSV, JSON')
+							p('Supported formats: CSV, JSON, Delimited(txt)')
 							p('Expected CSV format:\n WAREHOUSE_ID, PRODUCT_ID, MANUFACTURER, PRODUCT, BIN_DATE, QUANTITY')
 							p('Expected JSON format:\n {"WAREHOUSE_ID": 1, "PRODUCT_ID": 101, "MANUFACTURER": "ABC Corp", "PRODUCT": "Widget A", "BIN_DATE": "2025-02-06T10:00", "QUANTITY": 100}')
 						}
 						form(id: 'uploadForm', class: 'mt-3') {
 							div(class: 'mb-3') {
 								label(for: 'fileUpload', class: 'form-label', 'Choose File')
-								input(type: 'file', class: 'form-control', id: 'fileUpload', accept: '.csv,.json', required: '')
+								input(type: 'file', class: 'form-control', id: 'fileUpload', accept: '.csv,.json,.txt', required: '')
 							}
 							button(type: 'submit', class: 'btn btn-primary', 'Upload File')
 						}
@@ -155,7 +157,10 @@ html(lang:'en') {
                             }
                         }
                         div(class: 'row mb-3') {
-                          
+                            div(class: 'col-md-6') {
+                                label(for: 'bin_date', class: 'form-label', 'Bin Date')
+                                input(type: 'date', class: 'form-control', id: 'bin_date', name: 'bin_date', required: '')
+                            }
                             div(class: 'col-md-6') {
                                 label(for: 'quantity', class: 'form-label', 'Quantity')
                                 input(type: 'number', class: 'form-control', id: 'quantity', name: 'quantity', required: '')
@@ -276,11 +281,16 @@ html(lang:'en') {
                 document.getElementById('inventoryForm').addEventListener('submit', function(e) {
                     e.preventDefault();
 					
+					// We don't allow the hours to be set.
+                    const binDateValue = document.getElementById('bin_date').value;
+					const binDateTime = binDateValue + ' 14:00:00'; 
+
                     const formData = {
                         warehouse_id: parseInt(document.getElementById('warehouse_id').value),
                         product_id: parseInt(document.getElementById('product_id').value),
                         manufacturer: document.getElementById('manufacturer').value,
-                        product: document.getElementById('product').value,            
+                        product: document.getElementById('product').value,
+                        bin_date: binDateTime,
                         quantity: parseInt(document.getElementById('quantity').value)
                     };
                     

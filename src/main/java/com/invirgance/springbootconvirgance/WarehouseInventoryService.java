@@ -25,7 +25,7 @@ public class WarehouseInventoryService
     {
         try
         {
-            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :QUANTITY)";
+            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :BIN_DATE, :QUANTITY)";
             Query insert = new Query(sql);
             QueryOperation operation = new QueryOperation(insert);
 
@@ -42,7 +42,7 @@ public class WarehouseInventoryService
     {
         try
         {
-            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :QUANTITY)";
+            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :BIN_DATE, :QUANTITY)";
             Query insert = new Query(sql);
 
             dbms.update(new BatchOperation(insert, inventory));
@@ -57,7 +57,6 @@ public class WarehouseInventoryService
     {
         try
         {
- 
             return dbms.query(new Query("SELECT * FROM WAREHOUSE_INVENTORY"));
         }
         catch (Exception e)

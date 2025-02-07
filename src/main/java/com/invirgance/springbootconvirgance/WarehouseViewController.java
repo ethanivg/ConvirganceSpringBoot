@@ -33,7 +33,6 @@ public class WarehouseViewController
             if (items == null) items = Collections.emptyList();
 
             model.addAttribute("inventoryItems", items);
-
             return "index";
         }
         catch (Exception e)

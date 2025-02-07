@@ -4,6 +4,7 @@
     "PRODUCT_ID": 101,
     "MANUFACTURER": "ABC Corp",
     "PRODUCT": "Widget A",
+    "BIN_DATE": "2025-02-06 14:00:00",
     "QUANTITY": 100
   },
   {
@@ -11,6 +12,7 @@
     "PRODUCT_ID": 102,
     "MANUFACTURER": "XYZ Inc",
     "PRODUCT": "Gadget B",
+    "BIN_DATE": "2025-02-06 14:00:00",
     "QUANTITY": 250
   },
   {
@@ -18,6 +20,7 @@
     "PRODUCT_ID": 103,
     "MANUFACTURER": "Tech Solutions",
     "PRODUCT": "Device C",
+    "BIN_DATE": "2025-02-06 14:00:00",
     "QUANTITY": 75
   }
 ]
