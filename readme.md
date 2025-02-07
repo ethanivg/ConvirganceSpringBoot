@@ -1,4 +1,4 @@
-# Convirgance - SprintBoot
+# Convirgance - SpringBoot
 
 # Setup
 - Start a PSQL server, or configure your own in application.properties
