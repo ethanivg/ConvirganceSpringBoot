@@ -1,7 +1,6 @@
 package com.invirgance.springbootconvirgance;
 
 import java.util.Collections;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class WarehouseViewController
     {
         try
         {
-            List<WarehouseInventory> items = warehouseInventoryService.getAllInventory();
+            var items = warehouseInventoryService.getAllInventory();
 
             if (items == null) items = Collections.emptyList();
 

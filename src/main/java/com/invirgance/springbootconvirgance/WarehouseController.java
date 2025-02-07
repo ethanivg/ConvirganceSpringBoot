@@ -9,11 +9,8 @@ import com.invirgance.convirgance.output.CSVOutput;
 import com.invirgance.convirgance.output.DelimitedOutput;
 import com.invirgance.convirgance.output.JSONOutput;
 import com.invirgance.convirgance.output.Output;
-import com.invirgance.convirgance.output.OutputCursor;
 import com.invirgance.convirgance.source.InputStreamSource;
 import com.invirgance.convirgance.target.OutputStreamTarget;
-import java.util.Iterator;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +41,7 @@ public class WarehouseController
     private WarehouseInventoryService warehouseInventoryService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadInventory(@RequestBody WarehouseInventory inventory)
+    public ResponseEntity<String> uploadInventory(@RequestBody JSONObject inventory)
     {
         try
         {       
@@ -62,7 +59,7 @@ public class WarehouseController
      * @return A list of Inventory Objects.
      */
     @GetMapping("/all")
-    public ResponseEntity<List<WarehouseInventory>> getAllInventory()
+    public ResponseEntity<Iterable<JSONObject>> getAllInventory()
     {
         return ResponseEntity.ok(warehouseInventoryService.getAllInventory());
     }
@@ -104,7 +101,7 @@ public class WarehouseController
                     new JSONOutput();
                 case "csv" ->
                     new CSVOutput();
-                case "pipe" ->
+                case "txt" ->
                     new DelimitedOutput();
                 default ->
                     null;
@@ -114,11 +111,10 @@ public class WarehouseController
 
             responseBody = outputStream ->
             {
-                try (OutputCursor cursor = output.write(new OutputStreamTarget(outputStream)))
+                try 
                 {
-                    var content = input.read(new InputStreamSource(file.getInputStream())).iterator();
-
-                    while (content.hasNext()) cursor.write(new JSONObject(content.next().toString()));
+                    var content = input.read(new InputStreamSource(file.getInputStream()));
+                    output.write(new OutputStreamTarget(outputStream), content);  
                 }
                 catch (Exception e)
                 {
@@ -175,9 +171,9 @@ public class WarehouseController
 
             if (input != null)
             {
-                var content = input.read(new InputStreamSource(file.getInputStream())).iterator();
+                var content = input.read(new InputStreamSource(file.getInputStream()));
 
-                while (content.hasNext()) warehouseInventoryService.saveInventory(new WarehouseInventory(new JSONObject(content.next().toString())));
+               warehouseInventoryService.saveInventoryBulk(content);
             }
             else
             {
@@ -204,7 +200,7 @@ public class WarehouseController
     public ResponseEntity<StreamingResponseBody> downloadInventory(@RequestParam String format)
     {
         StreamingResponseBody responseBody;
-        Iterator<WarehouseInventory> items = warehouseInventoryService.getAllInventory().iterator();
+        var items = warehouseInventoryService.getAllInventory();
         String filename;
 
         Output output = switch (format.toLowerCase())
@@ -223,7 +219,7 @@ public class WarehouseController
                 yield new CSVOutput();
             }
 
-            case "pipe" ->
+            case "txt" ->
             {
 
                 filename = "export.txt";
@@ -241,9 +237,9 @@ public class WarehouseController
 
         responseBody = outputStream ->
         {
-            try (OutputCursor cursor = output.write(new OutputStreamTarget(outputStream)))
+            try 
             {
-                while (items.hasNext()) cursor.write(new JSONObject(items.next().toString()));
+                output.write(new OutputStreamTarget(outputStream), items);
             }
             catch (Exception e)
             {

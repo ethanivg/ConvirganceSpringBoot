@@ -28,19 +28,17 @@ html(lang:'en') {
 										th('Warehouse ID')
 										th('Product ID')
 										th('Manufacturer')
-										th('Product')
-										th('Bin Date')
+										th('Product')									
 										th('Quantity')
 									}
 								}
 								tbody {
 									inventoryItems.each { item ->
 										tr {
-											td(item.warehouseId)
-											td(item.productId)
+											td(item.warehouse_id)
+											td(item.product_id)
 											td(item.manufacturer)
-											td(item.product)
-											td(item.binDate)
+											td(item.product)									
 											td(item.quantity)
 										}
 									}
@@ -64,7 +62,7 @@ html(lang:'en') {
 									label(class: 'form-check-label', for: 'formatCSV', 'CSV')
 								}
 								div(class: 'form-check') {
-									input(type: 'radio', class: 'form-check-input', id: 'formatPipe', name: 'format', value: 'pipe')
+									input(type: 'radio', class: 'form-check-input', id: 'formatPipe', name: 'format', value: 'txt')
 									label(class: 'form-check-label', for: 'formatPipe', 'Pipe Delimited')
 								}
 							}
@@ -115,7 +113,7 @@ html(lang:'en') {
 										label(class: 'form-check-label', for: 'outputCSV', 'CSV')
 									}
 									div(class: 'form-check') {
-										input(type: 'radio', class: 'form-check-input', id: 'outputPipe', name: 'outputFormat', value: 'pipe')
+										input(type: 'radio', class: 'form-check-input', id: 'outputPipe', name: 'outputFormat', value: 'txt')
 										label(class: 'form-check-label', for: 'outputPipe', 'Pipe Delimited')
 									}
 								}
@@ -138,12 +136,12 @@ html(lang:'en') {
                     form(id: 'inventoryForm', class: 'mt-3') {
                         div(class: 'row mb-3') {
                             div(class: 'col-md-6') {
-                                label(for: 'warehouseId', class: 'form-label', 'Warehouse ID')
-                                input(type: 'number', class: 'form-control', id: 'warehouseId', name: 'warehouseId', required: '')
+                                label(for: 'warehouse_id', class: 'form-label', 'Warehouse ID')
+                                input(type: 'number', class: 'form-control', id: 'warehouse_id', name: 'warehouse_id', required: '')
                             }
                             div(class: 'col-md-6') {
-                                label(for: 'productId', class: 'form-label', 'Product ID')
-                                input(type: 'number', class: 'form-control', id: 'productId', name: 'productId', required: '')
+                                label(for: 'product_id', class: 'form-label', 'Product ID')
+                                input(type: 'number', class: 'form-control', id: 'product_id', name: 'product_id', required: '')
                             }
                         }
                         div(class: 'row mb-3') {
@@ -157,10 +155,7 @@ html(lang:'en') {
                             }
                         }
                         div(class: 'row mb-3') {
-                            div(class: 'col-md-6') {
-                                label(for: 'binDate', class: 'form-label', 'Bin Date')
-                                input(type: 'date', class: 'form-control', id: 'binDate', name: 'binDate', required: '')
-                            }
+                          
                             div(class: 'col-md-6') {
                                 label(for: 'quantity', class: 'form-label', 'Quantity')
                                 input(type: 'number', class: 'form-control', id: 'quantity', name: 'quantity', required: '')
@@ -281,16 +276,11 @@ html(lang:'en') {
                 document.getElementById('inventoryForm').addEventListener('submit', function(e) {
                     e.preventDefault();
 					
-					// We don't allow the hours to be set.
-                    const binDateValue = document.getElementById('binDate').value;
-					const binDateTime = new Date(binDateValue).toISOString(); 
-
                     const formData = {
-                        warehouseId: parseInt(document.getElementById('warehouseId').value),
-                        productId: parseInt(document.getElementById('productId').value),
+                        warehouse_id: parseInt(document.getElementById('warehouse_id').value),
+                        product_id: parseInt(document.getElementById('product_id').value),
                         manufacturer: document.getElementById('manufacturer').value,
-                        product: document.getElementById('product').value,
-                        binDate: binDateTime,
+                        product: document.getElementById('product').value,            
                         quantity: parseInt(document.getElementById('quantity').value)
                     };
                     

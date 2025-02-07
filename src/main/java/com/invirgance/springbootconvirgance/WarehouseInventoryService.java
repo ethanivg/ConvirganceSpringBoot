@@ -1,56 +1,69 @@
 package com.invirgance.springbootconvirgance;
 
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.invirgance.convirgance.dbms.BatchOperation;
+import com.invirgance.convirgance.dbms.DBMS;
+import com.invirgance.convirgance.dbms.Query;
+import com.invirgance.convirgance.dbms.QueryOperation;
+import com.invirgance.convirgance.json.JSONObject;
+import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WarehouseInventoryService
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(WarehouseInventoryService.class);
-    private final WarehouseInventoryRepository warehouseInventoryRepository;
+    private final DBMS dbms;
 
     @Autowired
-    public WarehouseInventoryService(WarehouseInventoryRepository warehouseInventoryRepository)
+    public WarehouseInventoryService(DataSource dataSource)
     {
-        this.warehouseInventoryRepository = warehouseInventoryRepository;
+        this.dbms = new DBMS(dataSource);
     }
 
-    @Transactional
-    public void saveInventory(WarehouseInventory inventory)
-    {
-        try
-        {
-            warehouseInventoryRepository.save(inventory);
-            logger.info("Saved inventory item for warehouse: {}, product: {}",
-                    inventory.getWarehouseId(), inventory.getProduct());
-        }
-        catch (Exception e)
-        {
-            logger.error("Error saving inventory item", e);
-            throw e;
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public List<WarehouseInventory> getAllInventory()
+    public void saveInventory(JSONObject inventory)
     {
         try
         {
-            logger.info("Fetching all inventory items");
-            List<WarehouseInventory> items = warehouseInventoryRepository.findAll();
+            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :QUANTITY)";
+            Query insert = new Query(sql);
+            QueryOperation operation = new QueryOperation(insert);
 
-            return items;
+            insert.setBindings(inventory);
+            dbms.update(operation);
         }
         catch (Exception e)
         {
-            logger.error("Error fetching inventory items", e);
-            throw e;
+            throw new RuntimeException("Error saving inventory", e);
         }
     }
 
+    public void saveInventoryBulk(Iterable<JSONObject> inventory)
+    {
+        try
+        {
+            String sql = "insert into WAREHOUSE_INVENTORY values (:WAREHOUSE_ID, :PRODUCT_ID, :MANUFACTURER, :PRODUCT, :QUANTITY)";
+            Query insert = new Query(sql);
+
+            dbms.update(new BatchOperation(insert, inventory));
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error saving inventory", e);
+        }
+    }
+
+    public Iterable<JSONObject> getAllInventory()
+    {
+        try
+        {
+ 
+            return dbms.query(new Query("SELECT * FROM WAREHOUSE_INVENTORY"));
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error fetching inventory", e);
+        }
+    }
+ 
 }
