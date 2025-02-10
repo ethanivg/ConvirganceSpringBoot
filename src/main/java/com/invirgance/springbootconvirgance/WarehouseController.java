@@ -3,6 +3,7 @@ package com.invirgance.springbootconvirgance;
 import com.invirgance.convirgance.input.CSVInput;
 import com.invirgance.convirgance.input.DelimitedInput;
 import com.invirgance.convirgance.input.Input;
+import com.invirgance.convirgance.input.InputCursor;
 import com.invirgance.convirgance.input.JSONInput;
 import com.invirgance.convirgance.json.JSONObject;
 import com.invirgance.convirgance.output.CSVOutput;
@@ -11,8 +12,6 @@ import com.invirgance.convirgance.output.JSONOutput;
 import com.invirgance.convirgance.output.Output;
 import com.invirgance.convirgance.source.InputStreamSource;
 import com.invirgance.convirgance.target.OutputStreamTarget;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
- * The WarehouseController controls the behaviour for different routes.
+ * The WarehouseController controls the behavior for different routes.
  * @author tadghh
  */
 @RestController
@@ -35,164 +34,19 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 public class WarehouseController
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(WarehouseInventoryService.class);
-
     @Autowired
-    private WarehouseInventoryService warehouseInventoryService;
-
+    private WarehouseViewController warehouseInventoryService;
+    
     @PostMapping("/upload")
     public ResponseEntity<String> uploadInventory(@RequestBody JSONObject inventory)
     {
-        try
-        {       
-            warehouseInventoryService.saveInventory(inventory);
-            return ResponseEntity.ok("Inventory record stored successfully!");
-        }
-        catch (Exception e)
-        {
-            return ResponseEntity.status(500).body("Error storing inventory record: " + e.getMessage());
-        }
+        warehouseInventoryService.saveInventory(inventory);
+        return ResponseEntity.ok("Inventory record stored successfully!");
     }
     
     /**
-     * Returns the inventory objects currently stored in the WarehouseService's repository
-     * @return A list of Inventory Objects.
-     */
-    @GetMapping("/all")
-    public ResponseEntity<Iterable<JSONObject>> getAllInventory()
-    {
-        return ResponseEntity.ok(warehouseInventoryService.getAllInventory());
-    }
-
-    /**
-     * Converts the currently uploaded file into the requested format. 
-     * Both the download and upload are streamed at the same time.
-     * @param file the uploaded file to be converted.
-     * @param outputFormat The file-type to convert the uploaded file to.
-     * @return The stream containing the new converted file.
-     */
-    @PostMapping("/convert")
-    public ResponseEntity<StreamingResponseBody> convertFile(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("outputFormat") String outputFormat)
-    {
-        try
-        {
-            String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1).toLowerCase();
-            String filename = String.format("converted.%s", outputFormat);
-
-            StreamingResponseBody responseBody;
-
-            Input input = switch (extension)
-            {
-                case "csv" ->
-                    new CSVInput();
-                case "json" ->
-                    new JSONInput();
-                case "txt" ->
-                    new DelimitedInput();
-                default ->
-                    null;
-            };
-
-            Output output = switch (outputFormat)
-            {
-                case "json" ->
-                    new JSONOutput();
-                case "csv" ->
-                    new CSVOutput();
-                case "txt" ->
-                    new DelimitedOutput();
-                default ->
-                    null;
-            };
-
-            if (input == null || output == null) return ResponseEntity.badRequest().build();
-
-            responseBody = outputStream ->
-            {
-                try 
-                {
-                    var content = input.read(new InputStreamSource(file.getInputStream()));
-                    output.write(new OutputStreamTarget(outputStream), content);  
-                }
-                catch (Exception e)
-                {
-                    logger.error("Error streaming download", e);
-                    throw new RuntimeException("Error streaming download", e);
-                }
-            };
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, output.getContentType())
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                    .body(responseBody);
-
-        }
-        catch (Exception e)
-        {
-            logger.error("Error in file conversion", e);
-            return ResponseEntity.status(500).build();
-        }
-    }
-
-    /**
-     * Takes in a upload file, adding its contents to the WarehouseServices' repository.
-     * @param file The uploaded file.
-     * @return A string with the status of the upload.
-     */
-    @PostMapping("/upload-file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file)
-    {
-        try
-        {
-            String filename = file.getOriginalFilename();
-            String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
-
-            Input input = switch (extension)
-            {
-                case "csv" ->
-                {
-                    yield new CSVInput();
-                }
-                case "json" ->
-                {
-                    yield new JSONInput();
-                }
-                case "txt" ->
-                {
-                    yield new DelimitedInput();
-                }
-                default ->
-                {
-                    yield null;
-                }
-            };
-
-            if (input != null)
-            {
-                var content = input.read(new InputStreamSource(file.getInputStream()));
-
-               warehouseInventoryService.saveInventoryBulk(content);
-            }
-            else
-            {
-                logger.info("Unsupported File.");
-                return ResponseEntity.badRequest().body("Unsupported file type");
-            }
-
-            return ResponseEntity.ok("File processed successfully");
-        }
-        catch (Exception e)
-        {
-            logger.info("Error uploading: {}", e);
-            return ResponseEntity.status(500)
-                    .body("Error processing file: " + e.getMessage());
-        }
-    }
-
-    /**
      * Creates a download with the current contents of the WarehouseServices' inventory repository.
+     * 
      * @param format The requested download file-type format.
      * @return A stream of the inventory repository.
      */
@@ -200,52 +54,17 @@ public class WarehouseController
     public ResponseEntity<StreamingResponseBody> downloadInventory(@RequestParam String format)
     {
         StreamingResponseBody responseBody;
-        var items = warehouseInventoryService.getAllInventory();
+        Iterable<JSONObject> items = warehouseInventoryService.getAllInventory();
+        
         String filename;
+        String type = format.toLowerCase();
+        
+        Output output = getOutputObject(type);
+        
+        filename = "input." + type;
 
-        Output output = switch (format.toLowerCase())
-        {
-            case "json" ->
-            {
-
-                filename = "export.json";
-                yield new JSONOutput();
-            }
-
-            case "csv" ->
-            {
-
-                filename = "export.csv";
-                yield new CSVOutput();
-            }
-
-            case "txt" ->
-            {
-
-                filename = "export.txt";
-                yield new DelimitedOutput();
-            }
-
-            default ->
-            {
-                filename = "";
-                yield null;
-            }
-        };
-
-        if (output == null) return ResponseEntity.badRequest().build();
-
-        responseBody = outputStream ->
-        {
-            try 
-            {
-                output.write(new OutputStreamTarget(outputStream), items);
-            }
-            catch (Exception e)
-            {
-                logger.error("Error streaming download", e);
-                throw new RuntimeException("Error streaming download", e);
-            }
+        responseBody = outputStream -> {
+            output.write(new OutputStreamTarget(outputStream), items);
         };
 
         return ResponseEntity.ok()
@@ -254,4 +73,69 @@ public class WarehouseController
                 .body(responseBody);
     }
 
+    /**
+     * Converts the currently uploaded file into the requested format. 
+     * Both the download and upload are streamed at the same time.
+     * 
+     * @param file the uploaded file to be converted.
+     * @param outputFormat The file-type to convert the uploaded file to.
+     * @return The stream containing the new converted file.
+     */
+    @PostMapping("/convert")
+    public ResponseEntity<StreamingResponseBody> convertFile(@RequestParam("file") MultipartFile file, @RequestParam("outputFormat") String outputFormat)
+    {
+     
+        String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1).toLowerCase();
+        String filename = String.format("converted.%s", outputFormat);
+
+        StreamingResponseBody responseBody;
+
+        Input<JSONObject> input = getInputObject(extension);
+
+        Output output = getOutputObject(outputFormat);
+
+        responseBody = outputStream -> {
+            InputCursor<JSONObject> content = input.read(new InputStreamSource(file.getInputStream()));
+            output.write(new OutputStreamTarget(outputStream), content);
+        };
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, output.getContentType())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .body(responseBody);
+    }    
+    
+    /**
+     * Returns the input object for the given format.
+     * 
+     * @param format A string representing a file extension.
+     * @return The `Input` for the provided file type or null.
+     */
+    private Input<JSONObject> getInputObject(String format)
+    {
+        return switch (format) 
+        {
+            case "json" -> new JSONInput();
+            case "csv" -> new CSVInput();
+            case "txt" -> new DelimitedInput();
+            default -> null;
+        };
+    }
+       
+    /**
+     * Returns the output object for the provided file-type.
+     * 
+     * @param format The file type.
+     * @return The relevant Output object, or null 
+     */
+    private Output getOutputObject(String format)
+    {
+        return switch (format) 
+        {
+            case "json" -> new JSONOutput();
+            case "csv" -> new CSVOutput();
+            case "txt" -> new DelimitedOutput();
+            default -> null;
+        };
+    }
 }

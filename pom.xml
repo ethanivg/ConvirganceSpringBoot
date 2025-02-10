@@ -12,7 +12,7 @@
     <groupId>com.invirgance</groupId>
     <artifactId>springbootconvirgance</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>springbootconvirgance</name>
+    <name>ConvirganceSpringBoot</name>
     <description>Demo project for Spring Boot and Convirgance</description>
 
     <properties>
